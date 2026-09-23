@@ -373,6 +373,21 @@
   .conf-row b{color:var(--cafe); font-weight:800; font-variant-numeric:tabular-nums}
   .conf-row b.big{font-size:1.15rem; color:var(--verde)}
 
+  /* Pagar / Girar */
+  .pay-opts{display:flex; flex-direction:column; gap:9px; margin:4px 0 2px}
+  .pay-opt{display:flex; align-items:center; gap:12px; width:100%; background:var(--panel); border:1px solid var(--linea); border-radius:16px; padding:13px; cursor:pointer; text-align:left; font-family:var(--ff-ui)}
+  .pay-opt:hover{border-color:var(--verde-borde)}
+  .pay-opt .mic{width:44px;height:44px;border-radius:13px; display:grid;place-items:center; flex:0 0 auto}
+  .pay-opt .mic svg{width:22px;height:22px}
+  .pay-opt .info{flex:1; min-width:0}
+  .pay-opt .info b{display:block; font-size:.95rem; color:var(--tinta); font-weight:800}
+  .pay-opt .info small{color:var(--tinta-2); font-size:.78rem; font-weight:600}
+  .pay-opt .chev{color:var(--tinta-2)}
+  .pay-opt .chev svg{width:18px;height:18px}
+  .montos{display:grid; grid-template-columns:repeat(2,1fr); gap:9px; margin:8px 0 2px}
+  .chip-m{padding:14px; border-radius:15px; border:1.5px solid var(--linea); background:var(--panel); font-family:var(--ff-ui); font-weight:800; font-size:1.05rem; color:var(--cafe-2); cursor:pointer; font-variant-numeric:tabular-nums}
+  .chip-m.on{border-color:var(--verde-2); background:var(--verde-suave); color:var(--verde)}
+
   /* Éxito */
   .success{text-align:center; padding:12px 6px}
   .check{width:96px;height:96px;border-radius:50%; background:var(--verde-suave); display:grid;place-items:center; margin:6px auto 14px; position:relative}
@@ -543,7 +558,7 @@
 
             <!-- Accesos rápidos -->
             <div class="quick">
-              <button class="qa" data-go="cafe"><span class="ic ic-verde"><svg><use href="#i-down"/></svg></span><span>Recibir pago</span></button>
+              <button class="qa" data-go="recibir"><span class="ic ic-verde"><svg><use href="#i-down"/></svg></span><span>Recibir pago</span></button>
               <button class="qa" data-go="pagar"><span class="ic ic-rojo"><svg><use href="#i-send"/></svg></span><span>Pagar / Girar</span></button>
               <button class="qa" data-go="anticipo"><span class="ic ic-oro"><svg><use href="#i-bolt"/></svg></span><span>Anticipo</span></button>
               <button class="qa" data-go="ahorro"><span class="ic ic-cafe"><svg><use href="#i-piggy"/></svg></span><span>Ahorrar</span></button>
@@ -559,7 +574,7 @@
             </div>
 
             <!-- Movimientos -->
-            <div class="sec-title"><h3>Últimos movimientos</h3><a data-go="pagar">Ver todos</a></div>
+            <div class="sec-title"><h3>Últimos movimientos</h3><a id="verTodos">Ver todos</a></div>
             <div class="card" id="movList">
               <div class="mov"><span class="mic ic-verde"><svg><use href="#i-truck"/></svg></span><div class="info"><b>Pago de café — 4 arrobas</b><small>Cooperativa · Hoy, 6:10 a. m.</small></div><span class="val pos">+ $420.000</span></div>
               <div class="mov"><span class="mic ic-oro"><svg><use href="#i-piggy"/></svg></span><div class="info"><b>Ahorro automático</b><small>Meta "Estudio" · Hoy</small></div><span class="val neg">- $42.000</span></div>
@@ -859,10 +874,13 @@
   $$("[data-go]").forEach(function(b){
     b.addEventListener("click", function(){
       var go = b.getAttribute("data-go");
-      if(go==="pagar"){ toast("Abriendo billetera…"); show("inicio"); return; }
+      if(go==="pagar"){ openPagar(); return; }
+      if(go==="recibir"){ openRecibir(); return; }
       if(views[go]){ show(go); }
     });
   });
+  var verTodos=$("#verTodos");
+  if(verTodos) verTodos.addEventListener("click", function(){ toast("Aquí ves todos tus movimientos"); });
 
   /* ---- Ojo saldo ---- */
   var saldoTxt = $("#saldoTxt"), saldoVal = 1240500, saldoHidden=false;
@@ -986,6 +1004,92 @@
       '</div>'
     );
     $("#okSuccess").addEventListener("click", function(){ closeSheet(); show("inicio"); });
+  }
+
+  /* ---- Pagar / Girar y Recibir ---- */
+  function addMov(iconClass, iconId, title, sub, valClass, valText){
+    var m=document.createElement("div"); m.className="mov";
+    m.innerHTML='<span class="mic '+iconClass+'"><svg><use href="#'+iconId+'"/></svg></span>'+
+      '<div class="info"><b>'+title+'</b><small>'+sub+'</small></div>'+
+      '<span class="val '+valClass+'">'+valText+'</span>';
+    var list=$("#movList"); if(list) list.insertBefore(m, list.firstChild);
+  }
+
+  function openPagar(){
+    openSheet(
+      '<h3>Pagar o girar</h3>'+
+      '<p class="sh-sub">Mueve tu plata fácil y al instante.</p>'+
+      '<div class="pay-opts">'+
+        '<button class="pay-opt" data-tipo="Giro por Bre-B" data-dest="Celular 300 123 4567" data-ic="ic-verde" data-icid="i-send"><span class="mic ic-verde"><svg><use href="#i-send"/></svg></span><div class="info"><b>Girar a un celular</b><small>Al instante con Bre-B</small></div><span class="chev"><svg><use href="#i-chev"/></svg></span></button>'+
+        '<button class="pay-opt" data-tipo="Compra en comercio" data-dest="Agroinsumos El Cafeto" data-ic="ic-rojo" data-icid="i-store"><span class="mic ic-rojo"><svg><use href="#i-store"/></svg></span><div class="info"><b>Pagar en un comercio</b><small>Escanea el código QR</small></div><span class="chev"><svg><use href="#i-chev"/></svg></span></button>'+
+        '<button class="pay-opt" data-tipo="Giro a la familia" data-dest="María Restrepo" data-ic="ic-oro" data-icid="i-user"><span class="mic ic-oro"><svg><use href="#i-user"/></svg></span><div class="info"><b>Enviar a la familia</b><small>A otra Billetera Semilla</small></div><span class="chev"><svg><use href="#i-chev"/></svg></span></button>'+
+      '</div>'
+    );
+    $$(".pay-opt").forEach(function(b){
+      b.addEventListener("click", function(){
+        openMonto(b.getAttribute("data-tipo"), b.getAttribute("data-dest"), b.getAttribute("data-ic"), b.getAttribute("data-icid"));
+      });
+    });
+  }
+
+  function openMonto(tipo, dest, ic, icid){
+    var montos=[10000,20000,50000,100000], sel=50000;
+    var chips=montos.map(function(v){ return '<button class="chip-m'+(v===sel?' on':'')+'" data-m="'+v+'">$ '+fmt(v)+'</button>'; }).join("");
+    openSheet(
+      '<h3>'+tipo+'</h3>'+
+      '<p class="sh-sub">Para: <b>'+dest+'</b></p>'+
+      '<div class="montos" id="montos">'+chips+'</div>'+
+      '<div class="conf-row"><span>Vas a pagar</span><b class="big" id="montoSel">$ '+fmt(sel)+'</b></div>'+
+      '<div class="conf-row"><span>Desde</span><b>Billetera ****4552</b></div>'+
+      '<div class="conf-row"><span>Te queda</span><b id="montoResto">$ '+fmt(saldoVal-sel)+'</b></div>'+
+      '<button class="btn btn-primary btn-block" id="confPagar" style="margin-top:16px">Confirmar <svg><use href="#i-check"/></svg></button>'+
+      '<button class="btn btn-block btn-sm" id="cancelPagar" style="background:transparent;color:var(--tinta-2);margin-top:6px">Cancelar</button>'
+    );
+    function refresh(){
+      $("#montoSel").textContent="$ "+fmt(sel);
+      var resto=saldoVal-sel, r=$("#montoResto");
+      r.textContent="$ "+fmt(resto); r.style.color = resto<0 ? "var(--rojo)" : "var(--cafe)";
+    }
+    $$("#montos .chip-m").forEach(function(c){
+      c.addEventListener("click", function(){
+        $$("#montos .chip-m").forEach(function(x){x.classList.remove("on");});
+        c.classList.add("on"); sel=parseInt(c.getAttribute("data-m"),10); refresh();
+      });
+    });
+    $("#cancelPagar").addEventListener("click", closeSheet);
+    $("#confPagar").addEventListener("click", function(){
+      if(sel>saldoVal){ toast("No tienes saldo suficiente 😕"); return; }
+      saldoVal-=sel; refreshSaldo();
+      addMov(ic, icid, tipo, dest+" · ahora", "neg", "- $"+fmt(sel));
+      successSheet("¡Listo, pago enviado!", "$ "+fmt(sel), tipo+" a "+dest+". Salió de tu billetera al instante.");
+    });
+  }
+
+  function qrSVG(){
+    var n=13, cell=9, pad=7, size=n*cell+pad*2, seed=7;
+    function rnd(){ seed=(seed*1103515245+12345)&0x7fffffff; return seed/0x7fffffff; }
+    var s='<svg width="152" height="152" viewBox="0 0 '+size+' '+size+'" style="border-radius:16px;background:#fff;box-shadow:var(--sombra-2)">';
+    for(var y=0;y<n;y++){ for(var x=0;x<n;x++){
+      if((x<4&&y<4)||(x>n-5&&y<4)||(x<4&&y>n-5)) continue;
+      if(rnd()>0.52){ s+='<rect x="'+(pad+x*cell)+'" y="'+(pad+y*cell)+'" width="'+cell+'" height="'+cell+'" fill="#1E5631"/>'; }
+    }}
+    function finder(fx,fy){ return '<rect x="'+fx+'" y="'+fy+'" width="'+(cell*3)+'" height="'+(cell*3)+'" rx="4" fill="#1E5631"/><rect x="'+(fx+cell*0.6)+'" y="'+(fy+cell*0.6)+'" width="'+(cell*1.8)+'" height="'+(cell*1.8)+'" rx="3" fill="#fff"/><rect x="'+(fx+cell)+'" y="'+(fy+cell)+'" width="'+cell+'" height="'+cell+'" rx="1.5" fill="#1E5631"/>'; }
+    s+=finder(pad,pad)+finder(pad+(n-3)*cell,pad)+finder(pad,pad+(n-3)*cell);
+    s+='</svg>';
+    return s;
+  }
+
+  function openRecibir(){
+    openSheet(
+      '<h3>Recibir un pago</h3>'+
+      '<p class="sh-sub">Muestra tu código o comparte tu número.</p>'+
+      '<div style="display:grid;place-items:center;margin:6px 0 12px">'+qrSVG()+'</div>'+
+      '<div class="conf-row"><span>Tu Billetera Semilla</span><b>José Restrepo</b></div>'+
+      '<div class="conf-row"><span>Número (Bre-B)</span><b>300 704 5521</b></div>'+
+      '<div class="conf-row"><span>Cédula Cafetera</span><b>19 704 552</b></div>'+
+      '<button class="btn btn-primary btn-block" id="okRecibir" style="margin-top:16px">Listo</button>'
+    );
+    $("#okRecibir").addEventListener("click", closeSheet);
   }
 
   /* ---- Toast ---- */
